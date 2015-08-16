@@ -12,7 +12,8 @@ The entire R markdown file is meant to be self explanatory.
 
 *The following options are introduced in accordance with the assignment instruction.*
 
-```{r setoptions , echo=TRUE , LANG = "en_US.UTF-8"}
+
+```r
 #   Default Options not displayed...
 #
 #     echo = TRUE
@@ -21,13 +22,15 @@ The entire R markdown file is meant to be self explanatory.
 
 *In addition, the following takes care of printing weekdays in English.*
 
-```{r results='hide' }
+
+```r
 Sys.setlocale("LC_TIME", "English")
 ```
 
 *Nececessay libraries are included.*
 
-```{r results='hide' , error = FALSE , warning =  FALSE , messages = FALSE }
+
+```r
 library ( dplyr )
 ```
 
@@ -38,7 +41,8 @@ library ( dplyr )
 **df0** *will be the dataframe from the original data*.
 **df1** *will be the dataframe with missing data ommitted.*
 
-```{r results='hide'}
+
+```r
 df0 <- read.csv ( "activity.csv" )
 df1 <- na.omit ( df0 )
 ```
@@ -46,51 +50,74 @@ df1 <- na.omit ( df0 )
 ## A. What is mean total number of steps taken per day?
 
 ### 1. Calculate the total number of steps taken per day
-```{r}
+
+```r
 df21 <- group_by ( df1 , date )
 df22 <- summarize ( df21 , total_steps = sum ( steps ) , avg_steps = mean ( steps ) )
 ```
 
 ### 2. Make a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 hist ( df22$total_steps , main = "Histogram of total steps" , xlab = "Daily total steps")
 ```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
 
 
 ### 3. Calculate and report the mean and median of the total number of steps taken per day
 
-```{r}
+
+```r
 mean22 <- mean(df22$total_steps)
 median22 <- median(df22$total_steps)
 ```
 
 **Mean**
 
-```{r}
+
+```r
 print ( mean22 )
+```
+
+```
+## [1] 10766.19
 ```
 
 **Median**
 
-```{r}
+
+```r
 print ( median22 )
+```
+
+```
+## [1] 10765
 ```
 
 ## B. What is the average daily activity pattern?
 
 ### 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r}
+
+```r
 df31 <- group_by ( df1 , interval )
 df32 <- summarize( df31 , avg_steps = mean ( steps ) )
 plot(df32 , type="l" , main = "Average number of steps")
 ```
 
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
+
 ### 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 ind <- which.max ( df32$avg_steps )
 print ( df32$interval [ ind ] )
+```
+
+```
+## [1] 835
 ```
 
 ## C. Imputing missing values
@@ -100,7 +127,8 @@ print ( df32$interval [ ind ] )
 
 *An auxilliary function for figuring out rows with missing data.*
 
-```{r}
+
+```r
 f <- function ( a ) 
 { 
   if ( sum ( is.na ( a ) ) > 0 )
@@ -113,14 +141,20 @@ f <- function ( a )
 
 *List of indices of missing values~*
 
-```{r}
+
+```r
 na_list <- which ( apply ( df0 , 1 , f ) )
 ```
 
 **the total number of missing values**
 
-```{r}
+
+```r
 length ( na_list )
+```
+
+```
+## [1] 2304
 ```
 
 ### 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated.
@@ -134,7 +168,8 @@ length ( na_list )
 
 *An auxiliry step...* 
 
-```{r}
+
+```r
 df41 <- group_by ( df1 , interval )
 
 df42 <- summarize ( df41 , median_steps = median ( steps ) )
@@ -162,8 +197,8 @@ g <- function ( m )
 
 *New dataframe*
 
-```{r}
 
+```r
 df90 <- df0
 
 for ( k in na_list )
@@ -174,26 +209,56 @@ for ( k in na_list )
 
 ### 4.Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r}
+
+```r
 df91 <- group_by ( df90 , date )
 df92 <- summarize( df91 , total_steps = sum ( steps ) )
 hist ( df92$total_steps , main = "Total number of steps per day" , xlab = "Total steps")
+```
+
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png) 
+
+```r
 mean92 <- mean ( df92$total_steps )
 median92 <- median ( df92$total_steps )
 ```
 
 **mean with missing data replaced vs. mean with original data set**
 
-```{r}
+
+```r
 print ( mean92 ) # mean with missing data replaced
+```
+
+```
+## [1] 9503.869
+```
+
+```r
 print ( mean22 ) # mean with original data set
+```
+
+```
+## [1] 10766.19
 ```
 
 **median with missing data replaced vs. median with original data set**
 
-```{r}
+
+```r
 print ( median92 ) # median with missing data replaced
+```
+
+```
+## [1] 10395
+```
+
+```r
 print ( median22 ) # median with original data set
+```
+
+```
+## [1] 10765
 ```
 
 **Impact of imputing NA values**
@@ -206,8 +271,8 @@ print ( median22 ) # median with original data set
 
 *An auxilliary function and its vectorized version~*
 
-```{r}
 
+```r
 h1 <- function ( d )
 {
   a <- weekdays ( as.Date ( d ) , abbreviate = TRUE )
@@ -224,16 +289,25 @@ h <- Vectorize ( h1 )
 
 *Extra factor variable weekday introduced in the data set.*
 
-```{r}
+
+```r
 df80 <- transform ( df90 , weekday = h ( date ) )
 df81 <- group_by ( df80 , weekday )
 ```
 
 **Summarized**
 
-```{r}
-summarize ( df81 , mean_steps = mean ( steps )  )
 
+```r
+summarize ( df81 , mean_steps = mean ( steps )  )
+```
+
+```
+## Source: local data frame [2 x 2]
+## 
+##   weekday mean_steps
+## 1 weekday   31.15448
+## 2 weekend   38.18880
 ```
 
 **Conclusion**
@@ -242,7 +316,8 @@ There seems to be a significant difference.
 
 ### 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r}
+
+```r
 df70 <- filter ( df81 , weekday == "weekday" )
 df60 <- filter ( df81 , weekday == "weekend" )
 df71 <- group_by ( df70 , interval )
@@ -256,3 +331,5 @@ par(mfrow = c(1, 2), mar = c(4, 5, 2, 1))
 plot ( df72 , type = "l" , main = "Mean steps: Weekdays" , ylab = "Average steps" )
 plot ( df62 , type = "l" , main = "Mean steps: Weekends" , ylab = "Average steps" )
 ```
+
+![plot of chunk unnamed-chunk-22](figure/unnamed-chunk-22-1.png) 
